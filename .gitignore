@@ -10,8 +10,8 @@ firebase-debug.*.log*
 # Firebase cache
 .firebase/
 
-# Firebase config
-public/firebase-config.js
+# Firebase config (공개 가능 - Firestore rules가 보안 담당)
+# public/firebase-config.js
 
 # Uncomment this if you'd like others to create their own Firebase project.
 # For a team working on the same Firebase project(s), it is recommended to leave
