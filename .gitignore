@@ -73,3 +73,9 @@ node_modules/
 .claude/
 tmpclaude-*
 nul
+
+# 원본 소스 자료 (JSON 추출 완료)
+PDFs/
+
+# 기타 자료 (운영과 무관한 내부 자료)
+기타/

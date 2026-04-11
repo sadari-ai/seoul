@@ -1,10 +1,10 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyA9lfSVAyNFGqzmVpeyJeMRkemPQbQpoAM",
-  authDomain: "seoul-firefighter-quiz.firebaseapp.com",
-  projectId: "seoul-firefighter-quiz",
-  storageBucket: "seoul-firefighter-quiz.firebasestorage.app",
-  messagingSenderId: "162763570042",
-  appId: "1:162763570042:web:c923436493ff97ef1474c3"
+  apiKey: "AIzaSyA5E4jEzU1YVS-4kWjgI4Dk0Ani-POvvyY",
+  authDomain: "seoul-dc4d7.firebaseapp.com",
+  projectId: "seoul-dc4d7",
+  storageBucket: "seoul-dc4d7.firebasestorage.app",
+  messagingSenderId: "1078404132418",
+  appId: "1:1078404132418:web:e0632ee8164591093447db"
 };
 
 // Firebase 초기화

@@ -20,8 +20,34 @@ const authDom = {
   userEmail: document.getElementById("userEmail"),
   logoutButton: document.getElementById("logoutButton"),
   privacyGroup: document.getElementById("privacyGroup"),
-  privacyConsent: document.getElementById("privacyConsent")
+  privacyConsent: document.getElementById("privacyConsent"),
+  nameError: document.getElementById("nameError"),
+  emailError: document.getElementById("emailError"),
+  passwordError: document.getElementById("passwordError"),
+  stationError: document.getElementById("stationError"),
+  departmentError: document.getElementById("departmentError"),
 };
+
+function setFieldError(field, errorEl, message) {
+  if (message) {
+    field.classList.add("input-error");
+    errorEl.textContent = message;
+    errorEl.style.display = "block";
+  } else {
+    field.classList.remove("input-error");
+    errorEl.textContent = "";
+    errorEl.style.display = "none";
+  }
+}
+
+function clearAllFieldErrors() {
+  setFieldError(authDom.nameField, authDom.nameError, "");
+  setFieldError(authDom.emailField, authDom.emailError, "");
+  setFieldError(authDom.passwordField, authDom.passwordError, "");
+  setFieldError(authDom.stationField, authDom.stationError, "");
+  setFieldError(authDom.departmentField, authDom.departmentError, "");
+  authDom.errorMessage.style.display = "none";
+}
 
 // 소방서 드롭박스 초기화
 function initializeStationDropdown() {
@@ -59,6 +85,13 @@ authDom.stationField.addEventListener("change", () => {
 
 // 페이지 로드 시 드롭박스 초기화
 initializeStationDropdown();
+
+// 입력 시 해당 필드 에러 실시간 제거
+authDom.nameField.addEventListener("input", () => setFieldError(authDom.nameField, authDom.nameError, ""));
+authDom.emailField.addEventListener("input", () => setFieldError(authDom.emailField, authDom.emailError, ""));
+authDom.passwordField.addEventListener("input", () => setFieldError(authDom.passwordField, authDom.passwordError, ""));
+authDom.stationField.addEventListener("change", () => setFieldError(authDom.stationField, authDom.stationError, ""));
+authDom.departmentField.addEventListener("change", () => setFieldError(authDom.departmentField, authDom.departmentError, ""));
 
 // 초기 상태: 이름, 소속, 부서 필드 숨기기 (로그인 모드)
 authDom.nameField.parentElement.style.display = "none";
@@ -100,15 +133,10 @@ authDom.toggleLink.addEventListener("click", (e) => {
   authDom.errorMessage.style.display = "none";
 });
 
-// 에러 메시지 표시
-function showError(message) {
-  authDom.errorMessage.textContent = message;
-  authDom.errorMessage.style.display = "block";
-}
-
 // 로그인/회원가입 처리
 authDom.authForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+  clearAllFieldErrors();
 
   const email = authDom.emailField.value.trim();
   const password = authDom.passwordField.value;
@@ -116,31 +144,46 @@ authDom.authForm.addEventListener("submit", async (e) => {
   const station = authDom.stationField.value;
   const department = authDom.departmentField.value;
 
-  if (!email || !password) {
-    showError("이메일과 비밀번호를 입력해주세요.");
-    return;
+  let hasError = false;
+
+  if (!email) {
+    setFieldError(authDom.emailField, authDom.emailError, "이메일을 입력해주세요.");
+    hasError = true;
+  }
+  if (!password) {
+    setFieldError(authDom.passwordField, authDom.passwordError, "비밀번호를 입력해주세요.");
+    hasError = true;
   }
 
   if (!isLoginMode) {
+    if (email && !email.endsWith("@seoul.go.kr")) {
+      setFieldError(authDom.emailField, authDom.emailError, "서울시 공무원 이메일(@seoul.go.kr)만 가입할 수 있습니다.");
+      hasError = true;
+    }
     if (!name) {
-      showError("이름을 입력해주세요.");
-      return;
+      setFieldError(authDom.nameField, authDom.nameError, "이름을 입력해주세요.");
+      hasError = true;
+    } else if (!/^[가-힣]+$/.test(name)) {
+      setFieldError(authDom.nameField, authDom.nameError, "이름은 한글만 입력해주세요. (예: 홍길동)");
+      hasError = true;
     }
     if (!station) {
-      showError("소속(소방서)을 선택해주세요.");
-      return;
+      setFieldError(authDom.stationField, authDom.stationError, "소속(소방서)을 선택해주세요.");
+      hasError = true;
     }
     if (!department) {
-      showError("부서(안전센터)를 선택해주세요.");
-      return;
+      setFieldError(authDom.departmentField, authDom.departmentError, "부서(안전센터)를 선택해주세요.");
+      hasError = true;
     }
     if (!authDom.privacyConsent.checked) {
-      showError("개인정보 수집 및 이용에 동의해주세요.");
-      return;
+      authDom.errorMessage.textContent = "개인정보 수집 및 이용에 동의해주세요.";
+      authDom.errorMessage.style.display = "block";
+      hasError = true;
     }
   }
 
-  authDom.errorMessage.style.display = "none";
+  if (hasError) return;
+
   authDom.authButton.disabled = true;
 
   try {
@@ -148,17 +191,11 @@ authDom.authForm.addEventListener("submit", async (e) => {
       // 로그인
       const userCredential = await auth.signInWithEmailAndPassword(email, password);
       console.log("로그인 성공:", userCredential.user);
-
-      // 이전 시험 상태 초기화
       localStorage.removeItem("cbt_state_v1");
-
-      // index.html로 리다이렉트
       window.location.href = "index.html";
     } else {
       // 회원가입
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-
-      // Firestore에 사용자 정보 저장
       await db.collection("users").doc(userCredential.user.uid).set({
         name: name,
         email: email,
@@ -166,46 +203,42 @@ authDom.authForm.addEventListener("submit", async (e) => {
         department: department,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-
       console.log("회원가입 성공:", userCredential.user);
       alert("회원가입이 완료되었습니다!");
-
-      // 로그인 모드로 전환
       isLoginMode = true;
       authDom.toggleLink.click();
     }
   } catch (error) {
     console.error("인증 오류:", error);
 
-    let errorMsg = "오류가 발생했습니다.";
-
     switch (error.code) {
       case "auth/email-already-in-use":
-        errorMsg = "이미 사용 중인 이메일입니다.";
+        setFieldError(authDom.emailField, authDom.emailError, "이미 사용 중인 이메일입니다.");
         break;
       case "auth/invalid-email":
-        errorMsg = "유효하지 않은 이메일 형식입니다.";
+        setFieldError(authDom.emailField, authDom.emailError, "유효하지 않은 이메일 형식입니다.");
         break;
       case "auth/weak-password":
-        errorMsg = "비밀번호는 6자 이상이어야 합니다.";
+        setFieldError(authDom.passwordField, authDom.passwordError, "비밀번호는 6자 이상이어야 합니다.");
         break;
       case "auth/user-not-found":
-        errorMsg = "등록되지 않은 사용자입니다. 먼저 회원가입을 해주세요.";
+        setFieldError(authDom.emailField, authDom.emailError, "등록되지 않은 이메일입니다.");
         break;
       case "auth/wrong-password":
-        errorMsg = "비밀번호가 올바르지 않습니다.";
+        setFieldError(authDom.passwordField, authDom.passwordError, "비밀번호가 올바르지 않습니다.");
         break;
       case "auth/invalid-login-credentials":
-        errorMsg = "이메일 또는 비밀번호가 올바르지 않습니다. 회원가입을 먼저 하셨나요?";
+        setFieldError(authDom.emailField, authDom.emailError, "이메일 또는 비밀번호가 올바르지 않습니다.");
+        setFieldError(authDom.passwordField, authDom.passwordError, "이메일 또는 비밀번호가 올바르지 않습니다.");
         break;
       case "auth/too-many-requests":
-        errorMsg = "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.";
+        authDom.errorMessage.textContent = "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.";
+        authDom.errorMessage.style.display = "block";
         break;
       default:
-        errorMsg = `오류: ${error.code || error.message}`;
+        authDom.errorMessage.textContent = `오류: ${error.code || error.message}`;
+        authDom.errorMessage.style.display = "block";
     }
-
-    showError(errorMsg);
   } finally {
     authDom.authButton.disabled = false;
   }

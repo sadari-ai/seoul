@@ -92,6 +92,16 @@
       border-radius: 4px;
       display: none;
     }
+    .field-error {
+      color: #d32f2f;
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+    .form-group input.input-error,
+    .form-group select.input-error {
+      border-color: #d32f2f;
+    }
     .form-group-checkbox {
       display: flex;
       align-items: flex-start;
@@ -126,7 +136,7 @@
   </style>
 </head>
 <body>
-  <header class="container">
+  <header class="container" style="text-align: center;">
     <h1>직장훈련 CBT 평가 시스템</h1>
   </header>
 
@@ -141,6 +151,7 @@
           <select id="station">
             <option value="">소방서를 선택하세요</option>
           </select>
+          <span class="field-error" id="stationError"></span>
         </div>
 
         <div class="form-group" id="departmentGroup">
@@ -148,21 +159,25 @@
           <select id="department" disabled>
             <option value="">먼저 소속을 선택하세요</option>
           </select>
+          <span class="field-error" id="departmentError"></span>
         </div>
 
         <div class="form-group">
           <label for="name">이름</label>
-          <input type="text" id="name" placeholder="이름을 입력하세요" />
+          <input type="text" id="name" placeholder="홍길동" />
+          <span class="field-error" id="nameError"></span>
         </div>
 
         <div class="form-group">
           <label for="email">이메일</label>
-          <input type="email" id="email" placeholder="example@email.com" required />
+          <input type="email" id="email" placeholder="example@seoul.go.kr" required />
+          <span class="field-error" id="emailError"></span>
         </div>
 
         <div class="form-group">
           <label for="password">비밀번호</label>
           <input type="password" id="password" placeholder="비밀번호 (6자 이상)" required />
+          <span class="field-error" id="passwordError"></span>
         </div>
 
         <div class="form-group-checkbox" id="privacyGroup" style="display: none;">
